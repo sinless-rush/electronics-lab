@@ -1,0 +1,249 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>BE Lab 3D</title>
+<style>
+:root{--bg:#eaf0ef;--pn:#fff;--tx:#14262a;--mu:#5d7276;--ac:#0f766e;--br:#b7791f;--bd:#c9d6d4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0f1719;--pn:#182225;--tx:#e3eeee;--mu:#8ea5a8;--ac:#2dd4bf;--br:#e0a84a;--bd:#2c3b3f}}
+:root[data-theme=dark]{--bg:#0f1719;--pn:#182225;--tx:#e3eeee;--mu:#8ea5a8;--ac:#2dd4bf;--br:#e0a84a;--bd:#2c3b3f}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.4 "Segoe UI",system-ui,sans-serif}
+header{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 14px;border-bottom:2px solid var(--br)}
+header b{font:700 19px Georgia,serif;margin-right:auto}
+button,select,input[type=number]{font:inherit;color:var(--tx);background:var(--pn);border:1px solid var(--bd);border-radius:6px;padding:5px 9px}
+button{cursor:pointer}button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+main{display:grid;gap:12px;padding:12px;grid-template-columns:1fr}
+@media(min-width:960px){main{grid-template-columns:1.1fr 1fr}}
+.card{background:var(--pn);border:1px solid var(--bd);border-radius:8px;padding:10px;margin-bottom:12px;min-width:0}
+#gl3{height:44vh;min-height:280px;border-radius:8px;overflow:hidden;background:#2a2f36}
+#gl{width:100%;height:100%;display:block;touch-action:none}
+#msg{margin:10px 0;min-height:20px}#msg p{margin:3px 0;padding:6px 9px;border-left:4px solid #dc2626;background:var(--pn)}#msg p.ok{border-color:var(--ac)}
+#guide h3{margin:0 0 4px;font:700 16px Georgia,serif}#guide ol{margin:6px 0;padding-left:20px}
+#tray{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+svg{width:100%;height:auto;display:block;background:#1f5c4a;border-radius:6px;touch-action:manipulation}
+svg.nd .it{pointer-events:none}
+.h{fill:#0d2a21;stroke:#7aa89a;stroke-width:1}.h.rl{stroke:#e0a84a}.h:hover{fill:#e0a84a}.h.pd{fill:#facc15}
+.jk{fill:#222;stroke:#e5e7eb;stroke-width:2}.jk:hover{fill:#facc15}
+svg text{fill:#e8f3ef;font:11px sans-serif;pointer-events:none}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;margin-bottom:10px;align-items:center}.g h4{grid-column:1/3;margin:0;font:700 14px Georgia,serif;color:var(--br)}
+.g label{display:flex;gap:6px;align-items:center;justify-content:space-between}.g input[type=range]{width:90px}
+#sc{width:100%;height:auto;background:#000;border-radius:6px;display:block}
+#dm{font:700 22px ui-monospace,monospace;color:var(--ac)}#rd{font:12px ui-monospace,monospace;color:var(--mu);margin-top:4px}
+#gl3{position:relative}#ov{position:absolute;top:8px;right:8px;display:flex;gap:6px}#hint{position:absolute;left:8px;bottom:8px;right:8px;background:#000b;color:#fde68a;padding:5px 9px;border-radius:6px;font-size:13px;pointer-events:none}.ring{fill:none;stroke:#facc15;stroke-width:3;pointer-events:none;animation:pl .8s infinite alternate}@keyframes pl{to{r:15;opacity:.3}}.h.pd,.jk.pd{fill:#facc15;stroke:#fff;stroke-width:3}@media(prefers-reduced-motion:reduce){.ring{animation:none}}#hov{position:absolute;left:8px;top:8px;max-width:55%;font-size:11px;color:#cbd5e1;background:#0007;padding:3px 7px;border-radius:5px;pointer-events:none;opacity:0;transition:opacity .15s}.it:hover{opacity:.6}#info{margin:10px 0}#info h3{margin:0 0 4px;font:700 15px Georgia,serif;color:var(--br)}#info p{margin:4px 0 8px}#svw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+@media(max-width:700px){#sv{width:980px;max-width:none}.g{grid-template-columns:1fr}.g h4{grid-column:1}.g input[type=range]{width:55%}input,select,button{font-size:16px}main{padding:8px}#gl3{height:40vh}}
+@media(max-width:959px){main section{display:contents}#gl3{order:1}#msg{order:2}#info{order:3}#guide{order:4}main>section:last-child>.card:first-child{order:5}main>section:last-child>.card:last-child{order:6}}
+@media(pointer:coarse){button,select{min-height:40px}}</style></head><body>
+<header><b>Basic Electronics Lab</b>
+<select id="ex"><option value="free">Free bench</option><option value="1A">Exp 1A: measure signals on the CRO</option><option value="1C">Exp 1C: phase angle from the ellipse</option><option value="2">Exp 2: diode forward bias</option><option value="1B">Exp 1B: Lissajous patterns</option><option value="4">Exp 4: rectifier ripple factor</option><option value="5">Exp 5: BJT common-emitter amplifier</option><option value="6">Exp 6: JFET common-source amplifier</option></select>
+<button id="fix">Replace burnt parts</button><button id="rs">Clear bench</button></header>
+<main><section>
+<div id="gl3"><canvas id="gl"></canvas><div id="ov"><button id="pm">Orbit</button><button id="rv">Reset view</button></div><div id="hint"></div><div id="hov"></div></div><div id="msg"></div><div class="card" id="info" hidden></div><div class="card" id="guide"></div></section>
+<section>
+<div class="card"><div id="tray"></div><div id="svw"><svg id="sv" viewBox="0 0 700 330"></svg></div></div>
+<div class="card">
+<div class="g"><h4>DC power supply</h4><label>Volts<input id="pv" type="range" min="0" max="30" step=".1" value="5"><output id="pvo">5.0</output></label><label>Limit A<input id="pi" type="range" min=".01" max="3" step=".01" value=".5"><output id="pio">0.50</output></label><button id="pon" class="on">Output on</button></div>
+<div class="g"><h4>Function generator (50 Ω)</h4><label>Wave<select id="fw"><option>sine</option><option>square</option><option>triangle</option></select></label><label>Hz<input id="ff" type="number" value="1000" min="1" max="200000" style="width:84px"></label><label>Peak V<input id="fa" type="range" min="0" max="20" step=".01" value="10"><output id="fao">10</output></label><label>FG2 Hz<input id="f2" type="number" value="200" min="1" max="200000" style="width:84px"></label><label>FG2 Vp<input id="a2" type="range" min="0" max="20" step=".5" value="5"></label></div>
+<div class="g"><h4>Oscilloscope</h4><label>CH1 V/div<select id="v1"></select></label><label>CH2 V/div<select id="v2"></select></label><label>Time/div<select id="tb"></select></label><label>X-Y mode<input id="xy" type="checkbox"></label></div>
+<div class="g"><h4>Multimeter</h4><span id="dm">0.000 V</span><label>Mode<select id="dmo"><option>DC V</option><option>AC V</option></select></label></div>
+<canvas id="sc" width="500" height="400"></canvas><div id="rd"></div></div>
+</section></main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const $=s=>document.querySelector(s),NR=14,NC=30;
+const S={w:[],p:[],tool:"wire",pend:null,psu:{v:5,i:.5,on:1,cc:0},fg:{w:"sine",f:1000,a:10},sc:{v1:5,v2:5,t:5e-4,xy:0},T:0,msgs:[],ip:0,dmv:0,ex:"free",f2:200,a2:5,q:[]};
+const jn=[64,65,66,67,68,69,69,70,71,72];
+const nodeOf=h=>{if(h>=1000)return jn[h-1000];const c=h/NR|0,r=h%NR;return r<5?c*2:r<10?c*2+1:60+r-10};
+const fm=(v,u)=>{for(const[k,p]of[[1e6,"M"],[1e3,"k"],[1,""],[1e-3,"m"],[1e-6,"µ"],[1e-9,"n"]])if(v>=k*.999)return+(v/k).toPrecision(3)+p+u;return v+u};
+const LST={R:[100,220,470,1e3,1500,2200,3900,8200,1e4,2.2e4,4.7e4,4.7e5],C:[33e-9,1e-7,1e-6,1e-5,1e-4],Z:[5.1,12]};
+/* ---------- circuit solver (nodal analysis, Newton for diodes, backward Euler for capacitors) ---------- */
+const DP={D:[14e-9,.0512],LED:[1e-19,.0517],Z:[14e-9,.0512]};
+function dio(e,v){const[Is,nv]=DP[e.k],x=Math.exp(Math.min(v/nv,60));let I=Is*(x-1),g=Is/nv*x;if(e.k=="Z"){const k=Math.exp(Math.min(-(v+e.p.v)/.1,60))*1e-3;I-=k;g+=k/.1}return[I,g+1e-12]}
+function gauss(A,b,n){for(let i=0;i<n;i++){let p=i;for(let r=i+1;r<n;r++)if(Math.abs(A[r][i])>Math.abs(A[p][i]))p=r;[A[i],A[p]]=[A[p],A[i]];[b[i],b[p]]=[b[p],b[i]];const d=A[i][i]||1e-30;for(let r=i+1;r<n;r++){const f=A[r][i]/d;if(f){for(let c=i;c<n;c++)A[r][c]-=f*A[i][c];b[r]-=f*b[i]}}}
+const x=new Float64Array(n);for(let i=n-1;i>=0;i--){let s=b[i];for(let c=i+1;c<n;c++)s-=A[i][c]*x[c];x[i]=s/(A[i][i]||1e-30)}return x}
+function prep(){const m=new Map(),id=x=>x==69?-1:(m.has(x)||m.set(x,m.size),m.get(x));[64,65,66,67,68,70,71,72].forEach(id);const E=[];
+S.w.forEach(w=>E.push({k:"W",a:id(nodeOf(w.a)),b:id(nodeOf(w.b))}));
+S.p.forEach(p=>{if(!p.x){E.push({k:p.t,a:id(nodeOf(p.a)),b:id(nodeOf(p.b)),g:p.g==null?-1:id(nodeOf(p.g)),p});p.si=p.sq=p.n=0}});
+return{E,n:m.size,x:new Float64Array(m.size)}}
+function stepSim(M,dt,t){const{E,n}=M,V=S.psu.on?S.psu.v:0,F=S.fg,sg=(f,a,w)=>{const p=6.2832*f*t;return a*(w=="sine"?Math.sin(p):w=="square"?(Math.sin(p)>=0?1:-1):.6366*Math.asin(Math.sin(p)))},fv=sg(F.f,F.a,F.w),fv2=sg(S.f2,S.a2,"sine");
+for(let pass=0;pass<3;pass++){let x;
+for(let it=0;it<25;it++){const A=Array.from({length:n},()=>new Float64Array(n)),b=new Float64Array(n);
+const G=(a,c,g)=>{if(a>=0)A[a][a]+=g;if(c>=0)A[c][c]+=g;if(a>=0&&c>=0){A[a][c]-=g;A[c][a]-=g}};
+const J=(a,c,i)=>{if(a>=0)b[a]+=i;if(c>=0)b[c]-=i};const AD=(r,c,v)=>{if(r>=0&&c>=0)A[r][c]+=v};
+for(let k=0;k<n;k++)A[k][k]+=1e-9;
+for(const e of E){if(e.k=="W")G(e.a,e.b,100);else if(e.k=="R")G(e.a,e.b,1/e.p.v);else if(e.k=="C"){const g=e.p.v/dt;G(e.a,e.b,g);J(e.a,e.b,g*e.p.vc)}else if(e.k=="Q"){const q=e.p,B=e.g,C=e.a,Em=e.b,Vt=.02585,ef=Math.exp(Math.min(q.vd/Vt,60)),er=Math.exp(Math.min(q.vr/Vt,60)),gf=1e-14*ef/Vt,gr=1e-14*er/Vt,It=1e-14*(ef-er);q.ic=It;G(B,Em,gf/200+1e-12);J(Em,B,1e-14*(ef-1)/200-gf/200*q.vd);G(B,C,gr/2+1e-12);J(C,B,1e-14*(er-1)/2-gr/2*q.vr);AD(C,B,gf-gr);AD(C,Em,-gf);AD(C,C,gr);AD(Em,B,gr-gf);AD(Em,Em,gf);AD(Em,C,-gr);J(Em,C,It-gf*q.vd+gr*q.vr)}else if(e.k=="J"){const q=e.p,Dn=e.a,Sn=e.b,Gn=e.g,vg=q.vd,vs=q.vr,t=vg+2.2,be=.0055/4.84;let I=0,gm=0,gd=1e-9;if(t>0){if(vs<t){I=be*(2*t*vs-vs*vs);gm=2*be*vs;gd+=2*be*(t-vs)}else{const l=1+.02*vs;I=be*t*t*l;gm=2*be*t*l;gd+=.02*be*t*t}}q.ic=I;AD(Dn,Gn,gm);AD(Dn,Sn,-gm-gd);AD(Dn,Dn,gd);AD(Sn,Gn,-gm);AD(Sn,Sn,gm+gd);AD(Sn,Dn,-gd);J(Sn,Dn,I-gm*vg-gd*vs)}else{const[I,g]=dio(e,e.p.vd);G(e.a,e.b,g);J(e.b,e.a,I-g*e.p.vd)}}
+if(S.psu.cc)b[0]+=S.psu.i;else{A[0][0]+=20;b[0]+=20*V}
+A[1][1]+=.02;b[1]+=.02*fv;A[5][5]+=.02;b[5]+=.02*fv2;const xv=15.6*Math.sin(314.16*t);A[6][6]+=.1;b[6]+=.1*xv;A[7][7]+=.1;b[7]-=.1*xv;
+x=gauss(A,b,n);let mx=0;
+for(const e of E)if(e.p&&DP[e.k]){const nv=(e.a<0?0:x[e.a])-(e.b<0?0:x[e.b]),o=e.p.vd,v=nv>o+.15?o+.15:nv;mx=Math.max(mx,Math.abs(v-o));e.p.vd=v}
+for(const e of E)if(e.k=="Q"||e.k=="J"){const q=e.p,v=i=>i<0?0:x[i],j=e.k=="J",a=v(e.g)-v(e.b),c=j?v(e.a)-v(e.b):v(e.g)-v(e.a),s=j?.5:.15,l=(m,o)=>m>o+s?o+s:j&&m<o-s?o-s:m,na=l(a,q.vd),nc=l(c,q.vr);mx=Math.max(mx,Math.abs(na-q.vd),Math.abs(nc-q.vr));q.vd=na;q.vr=nc}
+if(mx<1e-4)break}
+M.x=x;const ip=(V-x[0])*20;
+if(!S.psu.cc){if(ip>S.psu.i&&V>0){S.psu.cc=1;continue}}else if(x[0]>V){S.psu.cc=0;continue}
+S.ip=S.psu.cc?S.psu.i:ip;break}
+const x=M.x,vt=i=>i<0?0:x[i];
+for(const e of E){if(!e.p)continue;const v=vt(e.a)-vt(e.b),p=e.p;let I;
+if(e.k=="R")I=v/p.v;else if(e.k=="C"){I=p.v/dt*(v-p.vc);p.vc=v}else if(e.k=="Q"||e.k=="J")I=p.ic||0;else I=dio(e,p.vd)[0];
+p.si+=I;p.sq+=I*I;p.n++}}
+function simFrame(){const M=prep(),N=600,dt=S.sc.t*10/N,a=[],b=[],d=[];
+for(let i=0;i<2*N;i++){stepSim(M,dt,S.T);S.T+=dt;a.push(M.x[2]);b.push(M.x[3]);d.push(M.x[4])}
+for(const e of M.E){const p=e.p;if(!p)continue;const ia=p.si/p.n,ir=Math.sqrt(p.sq/p.n);p.i=Math.abs(ia);let w="";
+if(p.t=="R"&&ir*ir*p.v>.25)w="Resistor "+fm(p.v,"Ω")+" overheated ("+(ir*ir*p.v).toFixed(2)+" W against a 0.25 W rating) and smoked. Use a larger value or lower the voltage.";
+if(p.t=="LED"&&Math.abs(ia)>.03)w="LED burnt out at "+(Math.abs(ia)*1000).toFixed(0)+" mA (limit 30 mA). Add a series resistor.";
+if(p.t=="D"&&Math.abs(ia)>1)w="Diode 1N4001 failed at "+Math.abs(ia).toFixed(1)+" A. Limit the current with a resistor.";
+if(p.t=="Z"&&Math.abs(ia)*p.v>1.3)w="Zener overheated ("+(Math.abs(ia)*p.v).toFixed(1)+" W against 1.3 W). Add a series resistor.";
+if(p.t=="C"&&p.v>=1e-6&&(p.vc<-1.5||p.vc>25))w=p.vc<0?"Electrolytic capacitor connected backwards and vented. The first hole you click is the + leg.":"Capacitor passed its 25 V rating and popped.";
+if((p.t=="Q"||p.t=="J")&&Math.abs(ia)>.15)w="Transistor carried "+(Math.abs(ia)*1000|0)+" mA and burnt out. Add a collector or drain resistor.";if(w){p.x=1;p.vc=0;S.msgs.unshift(w);rebuild3d();draw();showMsg()}}
+const L=S.sc.t*10/N;let st=0;for(let i=1;i<N;i++)if(a[i-1]<0&&a[i]>=0){st=i;break}
+const sl=(q)=>q.slice(st,st+N);S.cur=[sl(a),sl(b)];
+const dv=sl(d),mean=dv.reduce((s,v)=>s+v,0)/N;S.dmv=S.dm?Math.sqrt(dv.reduce((s,v)=>s+(v-mean)**2,0)/N):mean;
+const c1=S.cur[0],mn=Math.min(...c1),mxv=Math.max(...c1);let f="--",i1=-1,i2=-1;
+for(let i=1;i<N;i++)if(c1[i-1]<(mn+mxv)/2&&c1[i]>=(mn+mxv)/2){if(i1<0)i1=i;else{i2=i;break}}
+if(i2>0)f=fm(1/((i2-i1)*L),"Hz");
+$("#rd").textContent="CH1: mean "+(c1.reduce((s,v)=>s+v,0)/N).toFixed(2)+" V, ripple factor "+(()=>{const m=c1.reduce((s,v)=>s+v,0)/N;return m>.05?(Math.sqrt(c1.reduce((s,v)=>s+(v-m)**2,0)/N)/m).toFixed(3):"--"})()+", Vpp "+(mxv-mn).toFixed(2)+" V, Vp "+((mxv-mn)/2).toFixed(2)+" V, Vrms(sine) "+((mxv-mn)/2.828).toFixed(2)+" V, f "+f+"   Supply: "+(S.psu.on?S.psu.v.toFixed(1):0)+" V, "+S.ip.toFixed(3)+" A"+(S.psu.cc?" (CURRENT LIMIT)":"");
+S.short=S.psu.cc&&S.ip>=S.psu.i*.99&&M.x[0]<.5;
+drawScope();$("#dm").textContent=S.dmv.toFixed(3)+(S.dm?" Vac":" V");drawTex()}
+/* ---------- scope ---------- */
+const scC=$("#sc"),sx=scC.getContext("2d");
+function drawScope(){sx.fillStyle="#020a08";sx.fillRect(0,0,500,400);sx.strokeStyle="#1d4a3c";sx.lineWidth=1;
+for(let i=0;i<=10;i++){sx.beginPath();sx.moveTo(i*50,0);sx.lineTo(i*50,400);sx.stroke()}
+for(let i=0;i<=8;i++){sx.beginPath();sx.moveTo(0,i*50);sx.lineTo(500,i*50);sx.stroke()}
+const[c1,c2]=S.cur||[[],[]],y1=v=>200-Math.max(-4.3,Math.min(4.3,v/S.sc.v1))*50,y2=v=>200-Math.max(-4.3,Math.min(4.3,v/S.sc.v2))*50;
+const tr=(arr,col,fy)=>{sx.strokeStyle=col;sx.lineWidth=2;sx.beginPath();arr.forEach((v,i)=>i?sx.lineTo(i/600*500,fy(v)):sx.moveTo(0,fy(v)));sx.stroke()};
+if(S.sc.xy){sx.strokeStyle="#facc15";sx.lineWidth=2;sx.beginPath();c1.forEach((v,i)=>{const X=250+Math.max(-4.9,Math.min(4.9,v/S.sc.v1))*50,Y=y2(c2[i]);i?sx.lineTo(X,Y):sx.moveTo(X,Y)});sx.stroke()}
+else{tr(c1,"#facc15",y1);tr(c2,"#22d3ee",y2)}
+sx.fillStyle="#8fd";sx.font="12px monospace";sx.fillText(S.sc.xy?"X-Y":"Y-T  "+fm(S.sc.t,"s")+"/div",6,14)}
+/* ---------- breadboard wiring panel ---------- */
+const X=c=>34+c*21.3,Y=[100,114,128,142,156,198,212,226,240,254,56,70,296,310],JX=[40,106,172,238,304,370,436,502,568,634],JL=["PSU +","FG +","CH1","CH2","DMM V","GND","GND","FG2 +","XF AC1","XF AC2"];
+const pos=h=>h>=1000?[JX[h-1000],24]:[X(h/NR|0),Y[h%NR]];
+const WC=["#ef4444","#3b82f6","#f59e0b","#a855f7","#22c55e","#f97316"],PC={R:"#d2b48c",C:"#2563eb",D:"#333",LED:"#ef4444",Z:"#b45309"};
+function draw(){let s="";
+S.w.forEach((w,i)=>{const[a,b]=pos(w.a),[c,d]=pos(w.b);s+=`<line class="it" data-w="${i}" x1="${a}" y1="${b}" x2="${c}" y2="${d}" stroke="${WC[i%6]}" stroke-width="4" stroke-linecap="round"/>`});
+S.p.forEach((p,i)=>{const[a,b]=pos(p.a),[c,d]=pos(p.b),col=p.x?"#666":PC[p.t],lb=p.t=="Q"?"NPN":p.t=="J"?"JFET":p.t=="Z"?p.v+"V":p.t=="LED"||p.t=="D"?p.t:fm(p.v,p.t=="R"?"Ω":"F");
+s+=`<line class="it" data-pi="${i}" x1="${a}" y1="${b}" x2="${c}" y2="${d}" stroke="${col}" stroke-width="9" stroke-linecap="round"/><text x="${(a+c)/2+6}" y="${(b+d)/2-8}">${p.x?"✖ ":""}${lb}${p.t=="C"?"+":""}</text>`+(p.g!=null?(([x,y])=>`<line class="it" data-pi="${i}" x1="${(a+c)/2}" y1="${(b+d)/2}" x2="${x}" y2="${y}" stroke="#facc15" stroke-width="5" stroke-linecap="round"/>`)(pos(p.g)):"")});
+for(let c=0;c<NC;c++)for(let r=0;r<NR;r++){const h=c*NR+r,[x,y]=pos(h);s+=`<circle class="h${r>=10?" rl":""}${S.q.includes(h)?" pd":""}" data-h="${h}" cx="${x}" cy="${y}" r="5.5"/>`}
+JL.forEach((l,i)=>{const[x,y]=pos(1000+i);s+=`<circle class="jk${S.q.includes(1000+i)?" pd":""}" data-h="${1000+i}" cx="${x}" cy="${y}" r="10"/><text x="${x-16}" y="${y+24}">${l}</text>`});
+s+=`<text x="2" y="74">+ −</text><text x="2" y="314">+ −</text>`;
+S.q.forEach(h=>{const[x,y]=pos(h);s+=`<circle class="ring" cx="${x}" cy="${y}" r="9"/>`});$("#sv").innerHTML=s;hint();$("#sv").classList.toggle("nd",S.tool!="del")}
+$("#sv").onclick=e=>{const t=e.target.dataset;
+if(S.tool=="del"){if(t.w!=null)S.w.splice(+t.w,1);else if(t.pi!=null)S.p.splice(+t.pi,1);else return;S.pend=null;return sync()}
+if(t.h==null)return;const H=+t.h;if(S.pend==null){S.pend=H;return draw()}
+const A=S.pend;S.pend=null;if(A==H)return draw();
+if(S.tool=="wire")S.w.push({a:A,b:H});
+else{if(A>=1000||H>=1000||nodeOf(A)==nodeOf(H)){S.msgs.unshift("Parts must span two different strips: the five holes in a column share a strip, so the legs would be shorted.");showMsg();return draw()}
+S.p.push({t:S.tool,a:A,b:H,v:+($("#val").value||0),vc:0,vd:.3})}
+sync()};
+const need=()=>S.tool=="Q"||S.tool=="J"?3:2,LB={Q:["COLLECTOR","BASE","EMITTER"],J:["DRAIN","GATE","SOURCE"]};
+const pn=h=>h>=1000?JL[h-1000]:"hole "+((h/NR|0)+1)+(h%NR<10?"abcdefghij"[h%NR]:["+ rail","− rail","+ rail","− rail"][h%NR-10]);
+function hint(){const q=S.q,l=LB[S.tool];$("#hint").textContent=S.tool=="del"?"Remove: click a wire or part":q.length?"Started at "+q.map(pn).join(" → ")+". Click "+(l?"the "+l[q.length]+" hole":"where it should connect")+" (click the last highlighted point again to cancel).":S.tool=="wire"?"Wire: click a hole or terminal to start (drag to orbit, pinch to zoom, Pan button to move)":"Place "+S.tool+": click "+(l?"the "+l[0]+" hole":"the first hole")}
+const EQ={bb:{n:"Breadboard",t:"A plug-in board for building circuits without soldering. The five holes in a short column (a to e, or f to j) are joined underneath, so legs in the same column share one node. The long rails along the top and bottom run the full length: use them for the + supply and for ground. A part must bridge two different columns, because two legs in one column are shorted together. Click two holes to run a wire or place a part."},psu:{n:"DC power supply",t:"Gives a steady adjustable DC voltage (0 to 30 V). Set the voltage first, then wire PSU + to your + rail; its minus side is the GND terminal. The current limit protects the circuit: if a short circuit tries to draw more, the supply lowers its voltage (constant-current mode). Start with a low limit, around 0.1 A, when trying an unknown circuit."},fg:{n:"Function generator",t:"Produces sine, square or triangle signals at the frequency and peak voltage you choose. A second sine output (FG2) is used for Lissajous patterns. Like a real one it has 50 Ω output resistance. Wire FG + into the circuit and look at the result on the oscilloscope."},scope:{n:"Oscilloscope (CRO)",t:"Draws voltage against time. Wire CH1 or CH2 to the point you want to measure; all grounds are common. Volts/div sets the height of each square and Time/div the width. Peak voltage = divisions × V/div, period T = divisions × Time/div, and f = 1/T. X-Y mode plots CH2 against CH1, which gives Lissajous patterns and phase ellipses."},dmm:{n:"Digital multimeter",t:"Reads the voltage at its V terminal relative to ground. DC V shows the average level; AC V shows the RMS of the varying part, so reading both gives the ripple of a rectifier. Its input resistance is very high, so it barely disturbs the circuit. Current measurement is not available yet."},xf:{n:"Centre-tapped transformer",t:"Steps the mains down to a safe 11-0-11 V, 50 Hz supply for the rectifier experiments. AC1 and AC2 are the two ends of the secondary and GND is the centre tap, so each end swings about ±15.6 V peak, opposite in phase to the other. Passing both ends through diodes gives full-wave rectification."}};
+function showInfo(k){const e=$("#info"),q=EQ[k];e.hidden=false;e.innerHTML=`<h3>${q.n}</h3><p>${q.t}</p><button id="ix">Close</button>`;$("#ix").onclick=()=>e.hidden=true;e.scrollIntoView({block:"nearest"})}
+const pdesc=p=>({R:"Resistor",C:"Capacitor",LED:"LED",D:"Diode 1N4001",Z:"Zener",Q:"NPN BJT",J:"JFET"}[p.t])+(p.t=="R"?" "+fm(p.v,"Ω"):p.t=="C"?" "+fm(p.v,"F"):p.t=="Z"?" "+p.v+" V":"")+(p.x?" (burnt)":"");
+function desc(o){if(o.eq)return EQ[o.eq].n+" · click for info";if(o.pi!=null)return S.p[o.pi]?pdesc(S.p[o.pi]):"";if(o.w!=null){const w=S.w[o.w];return w?"Wire "+pn(w.a)+" → "+pn(w.b):""}
+const n=nodeOf(o.h),at=[...S.p.filter(p=>[p.a,p.b,p.g].some(x=>x!=null&&nodeOf(x)==n)).map(pdesc),...S.w.filter(w=>nodeOf(w.a)==n||nodeOf(w.b)==n).map(()=>"wire")];
+return pn(o.h)+(at.length?" · on this node: "+at.join(", "):" · empty")}
+function setHov(t){const e=$("#hov");e.textContent=t;e.style.opacity=t?1:0}
+function clk(e){const t=e.target.dataset;
+if(S.tool=="del"){if(t.w!=null)S.w.splice(+t.w,1);else if(t.pi!=null)S.p.splice(+t.pi,1);else return;return sync()}
+if(t.h==null)return;const h=+t.h;
+if(S.q[S.q.length-1]==h){S.q=[];return sync()}
+S.q.push(h);if(S.q.length<need())return sync();
+const q=S.q;S.q=[];
+if(S.tool=="wire")S.w.push({a:q[0],b:q[1]});
+else if(q.some(x=>x>=1000)||new Set(q.map(nodeOf)).size<q.length){S.msgs.unshift("Part legs must go to different breadboard strips: the five holes in a column are one strip.");showMsg()}
+else S.p.push(P(S.tool,q[0],q[1],+($("#val").value||0),q[2]));
+sync()}
+$("#sv").onclick=clk;
+$("#sv").onmouseover=e=>{const d=e.target.dataset;setHov(d.h!=null?desc({h:+d.h}):d.w!=null?desc({w:+d.w}):d.pi!=null?desc({pi:+d.pi}):"")};$("#sv").onmouseleave=()=>setHov("");
+const TR=[["wire","Wire"],["R","Resistor"],["C","Capacitor"],["LED","LED"],["D","Diode"],["Z","Zener"],["Q","BJT NPN"],["J","JFET"],["del","Remove"]];
+$("#tray").innerHTML=TR.map(t=>`<button data-t="${t[0]}">${t[1]}</button>`).join("")+`<select id="val" hidden></select>`;
+function tool(t){S.tool=t;S.pend=null;S.q=[];document.querySelectorAll("#tray button").forEach(b=>b.classList.toggle("on",b.dataset.t==t));
+const v=$("#val"),l=LST[t];v.hidden=!l;if(l)v.innerHTML=l.map(x=>`<option value="${x}">${fm(x,t=="R"?"Ω":t=="C"?"F":"V")}</option>`).join("");draw()}
+$("#tray").onclick=e=>{if(e.target.dataset.t)tool(e.target.dataset.t)};
+/* ---------- messages ---------- */
+function showMsg(){const m=S.msgs.slice(0,3).map(x=>`<p>${x}</p>`).join("");$("#msg").innerHTML=(S.psu.cc&&S.short?`<p>Short circuit. The supply hit its current limit and dropped its voltage to protect itself. Find the wire that joins + to GND.</p>`:"")+m}
+/* ---------- instruments UI ---------- */
+const opt=(id,l,cb)=>{$(id).innerHTML=l.map(x=>`<option value="${x}">${fm(x,cb)}</option>`).join("")};
+opt("#v1",[.01,.02,.05,.1,.5,1,2,5,10,20],"V");opt("#v2",[.01,.02,.05,.1,.5,1,2,5,10,20],"V");opt("#tb",[2e-5,1e-4,2e-4,5e-4,1e-3,5e-3,1e-2,.1],"s");
+$("#v1").value=5;$("#v2").value=5;$("#tb").value=5e-4;
+const ui=()=>{S.psu.v=+$("#pv").value;S.psu.i=+$("#pi").value;S.fg.w=$("#fw").value;S.f2=Math.max(1,+$("#f2").value||1);S.a2=+$("#a2").value;S.fg.f=Math.max(1,+$("#ff").value||1);S.fg.a=+$("#fa").value;S.sc.v1=+$("#v1").value;S.sc.v2=+$("#v2").value;S.sc.t=+$("#tb").value;S.sc.xy=$("#xy").checked;S.dm=$("#dmo").selectedIndex;
+$("#pvo").value=S.psu.v.toFixed(1);$("#pio").value=S.psu.i.toFixed(2);$("#fao").value=S.fg.a};
+document.querySelectorAll("#pv,#pi,#fw,#ff,#fa,#f2,#a2,#v1,#v2,#tb,#xy,#dmo").forEach(e=>e.oninput=ui);
+$("#pon").onclick=()=>{S.psu.on^=1;$("#pon").classList.toggle("on",S.psu.on);$("#pon").textContent=S.psu.on?"Output on":"Output off"};
+$("#fix").onclick=()=>{S.p.forEach(p=>{p.x=0;p.vc=0});S.msgs=[];sync();showMsg()};
+$("#rs").onclick=()=>{S.w=[];S.p=[];S.msgs=[];S.pend=null;S.psu.cc=0;sync();showMsg()};
+/* ---------- guided experiments ---------- */
+const H=(c,r)=>c*NR+r,P=(t,a,b,v,g)=>({t,a,b,g,v:v||0,vc:0,vd:t=="Q"?.5:t=="J"?0:.3,vr:t=="J"?1:0});
+const GD={free:{t:"Free bench",s:["Pick a part, click two breadboard holes to place it, or click two points to run a wire. Instrument ground terminals are all tied together, like the common earth in a real lab.","Try breaking things: an LED straight across 5 V, a capacitor backwards, a wire from PSU + to GND, or a square wave into a diode."],b(){}},
+"1A":{t:"Exp 1A: measure DC, peak, RMS, period and frequency",s:["Function generator: sine, 10 V peak, 1000 Hz (already set).","Wire FG + to CH1 (done for you; remove it and redo it to practise).","Set CH1 to 5 V/div and Time/div to 0.5 ms. Peak should read 2 divisions and one period 2 divisions.","Change to 10 V/div and 1 ms/div, then 20 V/div and 0.2 ms/div, and fill in the manual table. Vrms = Vp/√2 = 7.07 V.","Switch to triangle (Vrms = Vp/√3) and square (Vrms = Vp)."],
+b(){S.w=[{a:1001,b:1002}];set({fw:"sine",ff:1000,fa:10,v1:5,tb:5e-4,xy:0})}},
+"1C":{t:"Exp 1C: phase angle between two signals (R = 3.9 kΩ, C = 33 nF)",s:["Circuit is built for you: FG drives R, C goes to ground, CH1 reads the source and CH2 reads across C.","Turn on X-Y mode to get the ellipse. Phase = sin⁻¹(B/A), where B is the Y-intercept and A the Y-peak.","Compare with tan⁻¹(ωRC). At 1 kHz that is about 38.7°. Repeat at 100, 500, 1500 and 2000 Hz.","The supply here has a 50 Ω output, so expect a small difference, as on a real bench."],
+b(){S.w=[{a:1001,b:H(2,0)},{a:H(2,2),b:1002},{a:H(8,0),b:1003},{a:H(0,11),b:1005}];S.p=[{t:"R",a:H(2,1),b:H(8,1),v:3900,vc:0,vd:.3},{t:"C",a:H(8,3),b:H(8,11),v:33e-9,vc:0,vd:0}];set({fw:"sine",ff:1000,fa:10,v1:5,v2:5,tb:5e-4,xy:1})}},
+"2":{t:"Exp 2: PN junction diode, forward bias (1N4001, 100 Ω)",s:["PSU + feeds a 100 Ω resistor, then the diode to GND. The DMM reads the voltage across the diode.","Raise the supply from 0.1 V upward and note the DMM voltage and the current shown under the scope. The diode barely conducts until about 0.6 V.","Find the knee, then compute static resistance Vf/If.","Experiment: remove the resistor and watch what the 1N4001 and the supply do."],
+b(){S.w=[{a:1000,b:H(3,0)},{a:H(7,3),b:1004},{a:H(12,0),b:1005}];S.p=[{t:"R",a:H(3,1),b:H(7,1),v:100,vc:0,vd:.3},{t:"D",a:H(7,2),b:H(12,2),v:0,vc:0,vd:.5}];set({pv:5,pi:.5,fa:0,xy:0,tb:1e-3})}},
+"1B":{t:"Exp 1B: Lissajous patterns and unknown frequency",s:["Already wired: FG + drives CH1 (horizontal) and FG2 + drives CH2 (vertical), with the scope in X-Y mode.","Keep fx = 100 Hz. Set FG2 to 100, 200, 300, 400 and 600 Hz and count the tangents: fy/fx = horizontal tangents / vertical tangents.","Untick X-Y to see both waves in time. Try 150.5 Hz and watch the pattern drift, because the ratio is no longer an integer."],b(){S.w=[{a:1001,b:1002},{a:1007,b:1003}];set({fw:"sine",ff:100,fa:5,f2:200,a2:5,v1:5,v2:5,tb:.01,xy:1})}},
+"4":{t:"Exp 4: full-wave rectifier, ripple factor and filter",s:["The 11-0-11 V centre-tapped transformer (AC1, AC2, GND as centre tap) feeds two diodes into a 1 kΩ load. It is already built.","CH1 shows the output. Read the mean and ripple factor under the scope. Expect about 0.48 without a filter (the manual measured 0.495).","Add a 100 µF capacitor: choose Capacitor, click the load strip first (that is the + leg), then the ground rail. Ripple should fall below 0.05.","Remove D2 for half-wave: expect a ripple factor near 1.21. Move the DMM wire onto the load and use DC V and AC V to get Vac/Vdc yourself.","Then connect the capacitor backwards and see what happens."],b(){S.w=[{a:1008,b:H(2,0)},{a:1009,b:H(4,0)},{a:1005,b:H(0,11)},{a:H(10,4),b:1002},{a:H(10,0),b:1004}];S.p=[P("D",H(2,1),H(10,1)),P("D",H(4,1),H(10,2)),P("R",H(10,3),H(10,11),1000)];set({fa:0,v1:5,tb:5e-3,xy:0})}},
+"5":{t:"Exp 5: BJT common-emitter amplifier",s:["Built: NPN, 12 V supply, 22 kΩ / 8.2 kΩ bias divider, RC 2.2 kΩ, RE 1 kΩ with a 100 µF bypass, 1 kΩ load. CH1 is the input and CH2 the output.","Move the DMM wire to base, emitter and collector. Expect roughly 3.2 V, 2.6 V and 6.5 V.","At 1 kHz with 20 mV peak in, read Vout/Vin and notice the 180° inversion.","Sweep from 10 Hz to 100 kHz, note the gain at each point and find fL, where the gain falls 3 dB. This transistor has no junction capacitance yet, so the high-frequency roll-off fH is not simulated.","Raise the input until the output clips."],b(){S.w=[{a:1000,b:H(0,10)},{a:1005,b:H(0,11)},{a:1001,b:H(4,0)},{a:H(4,2),b:1002},{a:H(20,2),b:1003}];S.p=[P("Q",H(12,0),H(16,0),0,H(8,0)),P("R",H(8,2),H(8,10),22e3),P("R",H(8,3),H(8,11),8200),P("R",H(12,1),H(12,10),2200),P("R",H(16,1),H(16,11),1000),P("C",H(16,2),H(16,11),1e-4),P("C",H(8,4),H(4,1),1e-5),P("C",H(12,2),H(20,0),1e-5),P("R",H(20,1),H(20,11),1000)];set({pv:12,pi:.5,fw:"sine",ff:1000,fa:.02,v1:.02,v2:1,tb:5e-4,xy:0})}},
+"6":{t:"Exp 6: JFET common-source amplifier",s:["Built: N-channel JFET (IDSS 5.5 mA, VP −2.2 V), 12 V supply, 1 kΩ drain, self-bias with a 1 kΩ source resistor, 470 kΩ gate resistor.","Put the DMM on the drain and source. Expect ID near 1.2 mA, so VS is about 1.2 V and VGS about −1.2 V.","With 0.1 V at 1 kHz, measure the gain (about 2) and phase. Remove the 100 µF source bypass and compare.","The output and transfer curves need a second adjustable supply for VGS and VDS. That comes with a dual supply in the next round."],b(){S.w=[{a:1000,b:H(0,10)},{a:1005,b:H(0,11)},{a:1001,b:H(4,0)},{a:H(4,2),b:1002},{a:H(20,2),b:1003}];S.p=[P("J",H(12,0),H(16,0),0,H(8,0)),P("R",H(12,1),H(12,10),1000),P("R",H(16,1),H(16,11),1000),P("C",H(16,2),H(16,11),1e-4),P("R",H(8,1),H(8,11),4.7e5),P("C",H(8,2),H(4,1),1e-6),P("C",H(12,2),H(20,0),1e-6),P("R",H(20,1),H(20,11),1e4)];set({pv:12,pi:.5,fw:"sine",ff:1000,fa:.1,v1:.1,v2:.5,tb:5e-4,xy:0})}}};
+function set(o){for(const k in o){const e=$("#"+k);if(!e)continue;if(e.type=="checkbox")e.checked=!!o[k];else e.value=o[k]}ui()}
+$("#ex").onchange=()=>{const g=GD[$("#ex").value];S.w=[];S.p=[];S.msgs=[];S.psu.cc=0;S.T=0;g.b();$("#guide").innerHTML=`<h3>${g.t}</h3><ol>${g.s.map(x=>`<li>${x}</li>`).join("")}</ol>`;sync();showMsg()};
+/* ---------- 3D bench ---------- */
+let G3={};const hz=[-.5,-.4,-.3,-.2,-.1,.1,.2,.3,.4,.5,-.8,-.7,.7,.8];
+const JP=[[-2.45,.12,-.78],[1.95,.12,-.78],[-.55,.12,-1.15],[-.25,.12,-1.15],[2.1,.15,.78],[.05,.12,-1.15],[-2.05,.12,-.78],[2.45,.12,-.78],[-2.6,.15,1.17],[-2.2,.15,1.17]];
+const hp=h=>h>=1000?new THREE.Vector3(...JP[h-1000]):new THREE.Vector3(((h/NR|0)-14.5)*.1,.12,hz[h%NR]);
+function mkTex(w,h){const c=document.createElement("canvas");c.width=w;c.height=h;return{c,x:c.getContext("2d"),t:new THREE.CanvasTexture(c)}}
+function init3d(){const cv=$("#gl"),R=new THREE.WebGLRenderer({canvas:cv,antialias:true}),sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(45,1,.1,60);
+sc.background=new THREE.Color(0x2a2f36);sc.add(new THREE.AmbientLight(0xffffff,.7));const dl=new THREE.DirectionalLight(0xffffff,.8);dl.position.set(2,4,3);sc.add(dl);
+const M=(c,o)=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.6},o||{}));
+const box=(w,h,d,x,y,z,m)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);sc.add(o);return o};
+box(8,.1,4.6,0,-.05,-.4,M(0x6b4a2b));
+const bt=mkTex(640,380);bt.x.fillStyle="#f1efe8";bt.x.fillRect(0,0,640,380);bt.x.fillStyle="#2b2b2b";
+for(let c=0;c<NC;c++)for(let r=0;r<NR;r++){const p=hp(c*NR+r);bt.x.fillRect((p.x+1.6)/3.2*640-3,(p.z+.95)/1.9*380-3,6,6)}
+bt.x.fillStyle="#dc2626";bt.x.fillRect(20,(-.85+.95)/1.9*380,600,3);bt.x.fillRect(20,(.65+.95)/1.9*380,600,3);bt.x.fillStyle="#2563eb";bt.x.fillRect(20,(-.65+.95)/1.9*380,600,3);bt.x.fillRect(20,(.85+.95)/1.9*380,600,3);bt.t.needsUpdate=true;
+const side=M(0xdad7cd);G3.bbm=new THREE.MeshStandardMaterial({map:bt.t,roughness:.7});
+const bb=new THREE.Mesh(new THREE.BoxGeometry(3.2,.12,1.9),[side,side,G3.bbm,side,side,side]);bb.position.set(0,.06,0);bb.userData={eq:"bb"};sc.add(bb);
+box(1.7,.85,.9,0,.425,-1.6,M(0x39424a)).userData={eq:"scope"};box(1.1,.45,.8,-2.2,.225,-1.2,M(0x3b4a5a)).userData={eq:"psu"};box(1.1,.45,.8,2.2,.225,-1.2,M(0x4a3b3b)).userData={eq:"fg"};box(.9,.3,.6,2.3,.15,.5,M(0x2f3b33)).userData={eq:"dmm"};
+G3.st=mkTex(500,400);G3.pt=mkTex(160,64);G3.dt=mkTex(180,60);
+const pl=(w,h,t,x,y,z,rx)=>{const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:t}));m.position.set(x,y,z);m.rotation.x=rx||0;sc.add(m);return m};
+pl(1.3,1,G3.st.t,0,.5,-1.14,0).userData={eq:"scope"};pl(.9,.3,G3.pt.t,-2.2,.3,-.795,0).userData={eq:"psu"};pl(.5,.16,G3.dt.t,2.3,.31,.5,-Math.PI/2).userData={eq:"dmm"};
+box(.8,.4,.5,-2.4,.2,.9,M(0x2d3b2d)).userData={eq:"xf"};const jc=[0xef4444,0xfacc15,0xfacc15,0x22d3ee,0xef4444,0x111111,0x111111,0xfacc15,0xf97316,0xf97316];JP.forEach((p,i)=>{const m=new THREE.Mesh(new THREE.SphereGeometry(.06,10,8),M(jc[i]));m.position.set(...p);m.userData={h:1000+i};G3.jk=(G3.jk||[]).concat(m);sc.add(m)});
+G3.sc=sc;G3.pg=new THREE.Group();sc.add(G3.pg);G3.M=M;G3.cam=cam;G3.R=R;G3.az=0;G3.el=.55;G3.d=5.2;G3.sm=[];
+let dn=null;cv.onpointerdown=e=>{dn=[e.clientX,e.clientY];cv.setPointerCapture(e.pointerId)};cv.onpointerup=()=>dn=null;
+cv.onpointermove=e=>{if(!dn)return;G3.az-=(e.clientX-dn[0])*.006;G3.el=Math.max(.1,Math.min(1.45,G3.el+(e.clientY-dn[1])*.006));dn=[e.clientX,e.clientY]};
+cv.onwheel=e=>{e.preventDefault();G3.d=Math.max(2,Math.min(9,G3.d+e.deltaY*.004))};
+function rs(){const b=$("#gl3");R.setPixelRatio(Math.min(devicePixelRatio||1,2));R.setSize(b.clientWidth,b.clientHeight,false);cam.aspect=b.clientWidth/b.clientHeight;cam.updateProjectionMatrix()}
+G3.tg=new THREE.Vector3(0,.2,-.5);G3.ray=new THREE.Raycaster();G3.ray.params.Points={threshold:.03};
+const hg=new THREE.BufferGeometry();hg.setAttribute("position",new THREE.Float32BufferAttribute(Array.from({length:NC*NR},(_,i)=>hp(i)).flatMap(v=>[v.x,.125,v.z]),3));G3.hpts=new THREE.Points(hg,new THREE.PointsMaterial({size:.04,visible:false}));sc.add(G3.hpts);
+const mk=(c,r)=>{const m=new THREE.Mesh(new THREE.SphereGeometry(r,14,10),new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:.75}));m.visible=false;sc.add(m);return m};G3.pm=[0,1,2].map(()=>mk(0xfacc15,.07));G3.hv=mk(0xffffff,.05);
+const pick=(e,all)=>{const r=cv.getBoundingClientRect();G3.ray.setFromCamera(new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1),cam);const j=G3.ray.intersectObjects(G3.jk)[0];if(j)return{h:j.object.userData.h};if(S.tool=="del"||all){const o=G3.ray.intersectObjects(G3.pg.children)[0];if(o&&(o.object.userData.w!=null||o.object.userData.pi!=null))return o.object.userData}const p=G3.ray.intersectObject(G3.hpts)[0];if(p)return{h:p.index};const q=G3.sc.children.filter(c=>c.userData.eq);const z=G3.ray.intersectObjects(q)[0];return z?{eq:z.object.userData.eq}:null};
+G3.ptr=new Map();const pd2=()=>{const[a,b]=[...G3.ptr.values()];return Math.hypot(a[0]-b[0],a[1]-b[1])||1};G3.hv.material.opacity=.35;
+function hover(e){const o=pick(e,1);G3.hv.visible=!!(o&&o.h!=null);if(G3.hv.visible)G3.hv.position.copy(hp(o.h));
+const m=o&&o.eq?(o.eq=="bb"?{material:G3.bbm}:G3.sc.children.find(c=>c.userData.eq==o.eq&&c.material.emissive)):o&&(o.w!=null||o.pi!=null)?G3.pg.children.find(c=>c.userData===o):null;
+if(G3.hm!==m){if(G3.hm&&G3.hm.material.emissive)G3.hm.material.emissive.setHex(0);G3.hm=m;if(m)m.material.emissive.setHex(0x3a3a22)}
+setHov(o?desc(o):"")}
+cv.onpointerleave=()=>{G3.hv.visible=false;setHov("")};
+dn=null;let mv=0;cv.oncontextmenu=e=>e.preventDefault();
+cv.onpointerdown=e=>{G3.ptr.set(e.pointerId,[e.clientX,e.clientY]);cv.setPointerCapture(e.pointerId);if(G3.ptr.size>1){dn=null;mv=99;G3.pd=pd2();return}dn={x:e.clientX,y:e.clientY,pan:e.button==2||e.shiftKey||G3.pan};mv=0};
+cv.onpointermove=e=>{if(G3.ptr.has(e.pointerId))G3.ptr.set(e.pointerId,[e.clientX,e.clientY]);if(G3.ptr.size>1){const d=pd2();G3.d=Math.max(1.2,Math.min(9,G3.d*G3.pd/d));G3.pd=d;return}if(!dn){hover(e);return}
+const dx=e.clientX-dn.x,dy=e.clientY-dn.y;mv+=Math.abs(dx)+Math.abs(dy);
+if(dn.pan){const k=G3.d*.0016,a=G3.az;G3.tg.x-=Math.cos(a)*dx*k+Math.sin(a)*dy*k;G3.tg.z+=Math.sin(a)*dx*k-Math.cos(a)*dy*k}
+else{G3.az-=dx*.006;G3.el=Math.max(.1,Math.min(1.45,G3.el+dy*.006))}dn.x=e.clientX;dn.y=e.clientY};
+cv.onpointerup=cv.onpointercancel=e=>{G3.ptr.delete(e.pointerId);dn=null;if(mv<6&&e.type=="pointerup"){if(e.pointerType=="touch"){hover(e);setTimeout(()=>setHov(""),2500)}const h=pick(e);if(h&&h.eq)showInfo(h.eq);else if(h)$("#sv").onclick({target:{dataset:h}})}};
+$("#pm").onclick=()=>{G3.pan=!G3.pan;$("#pm").textContent=G3.pan?"Pan":"Orbit";$("#pm").classList.toggle("on",G3.pan)};
+$("#rv").onclick=()=>{G3.tg.set(0,.2,-.5);G3.az=0;G3.el=.55;G3.d=5.2};
+addEventListener("resize",rs);rs();
+(function loop(){const t=performance.now()/1000;const T=G3.tg,ce=Math.cos(G3.el);cam.position.set(T.x+Math.sin(G3.az)*ce*G3.d,T.y+Math.sin(G3.el)*G3.d,T.z+Math.cos(G3.az)*ce*G3.d);cam.lookAt(T);G3.pm.forEach((m,i)=>{const h=S.q[i];m.visible=h!=null;if(h!=null){m.position.copy(hp(h));m.scale.setScalar(1.3+.5*Math.sin(t*8))}});
+S.p.forEach(p=>{if(p.m&&p.t=="LED"&&!p.x){const k=Math.min(1,(p.i||0)/.012);p.m.material.emissive.setRGB(k,k*.1,k*.1)}});
+G3.sm.forEach((s,i)=>{s.position.y=.2+((t*.4+i*.13)%.7);s.material.opacity=.5*(1-((t*.4+i*.13)%.7)/.7)});
+G3.bbm.color.set(S.short?0xb07a5a:0xffffff);R.render(sc,cam);requestAnimationFrame(loop)})()}
+function rebuild3d(){if(!G3.pg)return;const g=G3.pg;while(g.children.length){const o=g.children.pop();o.geometry&&o.geometry.dispose()}G3.sm=[];
+S.w.forEach((w,i)=>{const a=hp(w.a),b=hp(w.b),c=new THREE.QuadraticBezierCurve3(a,a.clone().add(b).multiplyScalar(.5).setY(.5),b);{const tm=new THREE.Mesh(new THREE.TubeGeometry(c,16,.02,6),G3.M(+("0x"+WC[i%6].slice(1))));tm.userData={w:i};g.add(tm)}});
+S.p.forEach(p=>{const a=hp(p.a),b=hp(p.b),mid=a.clone().add(b).multiplyScalar(.5),d=b.clone().sub(a),L=d.length(),col=p.x?0x111111:{R:0xd2b48c,C:0x1e3a8a,D:0x222222,LED:0xdc2626,Z:0xb45309,Q:0x222244,J:0x444422}[p.t];let m;
+if(p.t=="LED"){m=new THREE.Mesh(new THREE.SphereGeometry(.07,12,10),G3.M(col,{transparent:true,opacity:.9}));m.position.copy(mid).setY(.22)}
+else{m=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,Math.max(.1,L*.7),10),G3.M(col));m.position.copy(mid).setY(.19);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.clone().setY(0).normalize())}
+p.m=m;m.userData={pi:S.p.indexOf(p)};g.add(m);
+const lg=new THREE.Mesh(new THREE.CylinderGeometry(.008,.008,L,5),G3.M(0xaaaaaa));lg.position.copy(mid).setY(.14);lg.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.clone().normalize());g.add(lg);
+if(p.x)for(let k=0;k<6;k++){const s=new THREE.Mesh(new THREE.SphereGeometry(.06,8,6),new THREE.MeshBasicMaterial({color:0x888888,transparent:true,opacity:.4}));s.position.set(mid.x+(k%3-1)*.03,.2,mid.z);g.add(s);G3.sm.push(s)}})}
+function drawTex(){if(!G3.st)return;G3.st.x.drawImage(scC,0,0);G3.st.t.needsUpdate=true;
+const p=G3.pt.x;p.fillStyle="#061a14";p.fillRect(0,0,160,64);p.fillStyle=S.psu.cc?"#f87171":"#4ade80";p.font="bold 24px monospace";p.fillText((S.psu.on?S.psu.v:0).toFixed(1)+" V",8,28);p.font="18px monospace";p.fillText(S.ip.toFixed(2)+" A"+(S.psu.cc?" CC":""),8,54);G3.pt.t.needsUpdate=true;
+const d=G3.dt.x;d.fillStyle="#9fb59a";d.fillRect(0,0,180,60);d.fillStyle="#111";d.font="bold 30px monospace";d.fillText(S.dmv.toFixed(3),8,40);G3.dt.t.needsUpdate=true}
+function sync(){rebuild3d();draw()}
+ui();tool("wire");init3d();$("#ex").onchange();$("#ex").value="free";$("#ex").onchange();
+(function tick(){const t0=performance.now();if(!document.hidden)try{simFrame()}catch(e){console.error(e)}setTimeout(tick,Math.max(160,(performance.now()-t0)*1.5))})();
+</script></body></html>
