@@ -2,6 +2,8 @@
 
 A virtual electronics bench that runs entirely in your browser. You wire real circuits on a breadboard, drive them with a power supply and function generator, and measure them with an oscilloscope and a multimeter, all backed by a live circuit simulator. Wire something badly and the part burns out, just as it would on a real bench.
 
+**Live demo: https://sinless-rush.github.io/electronics-lab/**
+
 It is a single file, `index.html`, with no build step and no install.
 
 ## Purpose
@@ -16,6 +18,12 @@ What it aims to teach:
 - What the numbers in a lab manual should look like (ripple factors, bias voltages, gains), so you can tell when your own readings are off.
 
 ## Quick start
+
+### Use it online
+
+Open https://sinless-rush.github.io/electronics-lab/ in your browser. Nothing to download or install. Pick an experiment from the dropdown in the header, or stay on **Free bench**.
+
+### Run it on your own computer
 
 1. Get the files, using either method:
    - **Download:** on the repository page, choose **Code → Download ZIP**, then unzip it.
