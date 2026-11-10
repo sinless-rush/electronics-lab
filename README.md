@@ -17,14 +17,24 @@ What it aims to teach:
 
 ## Quick start
 
-1. Download or clone the repository.
-2. Open `index.html` in a modern browser (Chrome, Firefox, Safari or Edge).
+1. Get the files, using either method:
+   - **Download:** on the repository page, choose **Code → Download ZIP**, then unzip it.
+   - **Clone:** `git clone https://github.com/sinless-rush/electronics-lab.git`
+2. Open the folder and double-click `index.html`. It opens in your default browser, with no install or build step.
 3. Pick an experiment from the dropdown in the header, or stay on **Free bench**.
+
+If the page opens as plain text or the 3D bench stays blank, start a small local server in the project folder and open the address it prints:
+
+```
+python3 -m http.server 8000
+```
+
+Then visit `http://localhost:8000` in your browser.
 
 Requirements:
 
-- A browser with WebGL enabled.
-- An internet connection on first load, because Three.js r128 is loaded from cdnjs. Everything else is inline.
+- A recent version of Chrome, Firefox, Safari or Edge, with WebGL enabled. Phones and tablets work too.
+- An internet connection when the page loads, because Three.js r128 is fetched from cdnjs. Everything else is inline.
 
 ## Overview of features
 
