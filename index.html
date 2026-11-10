@@ -47,7 +47,7 @@ svg text{fill:#e8f3ef;font:11px sans-serif;pointer-events:none}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 const $=s=>document.querySelector(s),NR=14,NC=30;
-const S={w:[],p:[],tool:"wire",pend:null,psu:{v:5,i:.5,on:1,cc:0},fg:{w:"sine",f:1000,a:10},sc:{v1:5,v2:5,t:5e-4,xy:0},T:0,msgs:[],ip:0,dmv:0,ex:"free",f2:200,a2:5,q:[]};
+const S={w:[],p:[],tool:"wire",pend:null,psu:{v:5,i:.5,on:1,cc:0},fg:{w:"sine",f:1000,a:10},sc:{v1:5,v2:5,t:5e-4,xy:0},T:0,msgs:[],ip:0,dmv:0,ex:"free",f2:200,a2:5,q:[],wsig:""};
 const jn=[64,65,66,67,68,69,69,70,71,72];
 const nodeOf=h=>{if(h>=1000)return jn[h-1000];const c=h/NR|0,r=h%NR;return r<5?c*2:r<10?c*2+1:60+r-10};
 const fm=(v,u)=>{for(const[k,p]of[[1e6,"M"],[1e3,"k"],[1,""],[1e-3,"m"],[1e-6,"µ"],[1e-9,"n"]])if(v>=k*.999)return+(v/k).toPrecision(3)+p+u;return v+u};
@@ -98,6 +98,7 @@ for(let i=1;i<N;i++)if(c1[i-1]<(mn+mxv)/2&&c1[i]>=(mn+mxv)/2){if(i1<0)i1=i;else{
 if(i2>0)f=fm(1/((i2-i1)*L),"Hz");
 $("#rd").textContent="CH1: mean "+(c1.reduce((s,v)=>s+v,0)/N).toFixed(2)+" V, ripple factor "+(()=>{const m=c1.reduce((s,v)=>s+v,0)/N;return m>.05?(Math.sqrt(c1.reduce((s,v)=>s+(v-m)**2,0)/N)/m).toFixed(3):"--"})()+", Vpp "+(mxv-mn).toFixed(2)+" V, Vp "+((mxv-mn)/2).toFixed(2)+" V, Vrms(sine) "+((mxv-mn)/2.828).toFixed(2)+" V, f "+f+"   Supply: "+(S.psu.on?S.psu.v.toFixed(1):0)+" V, "+S.ip.toFixed(3)+" A"+(S.psu.cc?" (CURRENT LIMIT)":"");
 S.short=S.psu.cc&&S.ip>=S.psu.i*.99&&M.x[0]<.5;
+if(supplySig()!==S.wsig)showMsg();
 drawScope();$("#dm").textContent=S.dmv.toFixed(3)+(S.dm?" Vac":" V");drawTex()}
 /* ---------- scope ---------- */
 const scC=$("#sc"),sx=scC.getContext("2d");
@@ -157,7 +158,9 @@ function tool(t){S.tool=t;S.pend=null;S.q=[];document.querySelectorAll("#tray bu
 const v=$("#val"),l=LST[t];v.hidden=!l;if(l)v.innerHTML=l.map(x=>`<option value="${x}">${fm(x,t=="R"?"Ω":t=="C"?"F":"V")}</option>`).join("");draw()}
 $("#tray").onclick=e=>{if(e.target.dataset.t)tool(e.target.dataset.t)};
 /* ---------- messages ---------- */
-function showMsg(){const m=S.msgs.slice(0,3).map(x=>`<p>${x}</p>`).join("");$("#msg").innerHTML=(S.psu.cc&&S.short?`<p>Short circuit. The supply hit its current limit and dropped its voltage to protect itself. Find the wire that joins + to GND.</p>`:"")+m}
+/* Supply warning state as shown to the user: "" (normal), "short", or "cc<limit>" (current-limited, not a short). */
+const supplySig=()=>S.psu.cc?(S.short?"short":"cc"+S.psu.i.toFixed(2)):"";
+function showMsg(){const m=S.msgs.slice(0,3).map(x=>`<p>${x}</p>`).join("");S.wsig=supplySig();$("#msg").innerHTML=(S.psu.cc?(S.short?`<p>Short circuit. The supply hit its current limit and dropped its voltage to protect itself. Find the wire that joins + to GND.</p>`:`<p>Current limit reached. The supply is holding its ${S.psu.i.toFixed(2)} A limit and has lowered its voltage to protect the circuit. Raise the limit or reduce the load.</p>`):"")+m}
 /* ---------- instruments UI ---------- */
 const opt=(id,l,cb)=>{$(id).innerHTML=l.map(x=>`<option value="${x}">${fm(x,cb)}</option>`).join("")};
 opt("#v1",[.01,.02,.05,.1,.5,1,2,5,10,20],"V");opt("#v2",[.01,.02,.05,.1,.5,1,2,5,10,20],"V");opt("#tb",[2e-5,1e-4,2e-4,5e-4,1e-3,5e-3,1e-2,.1],"s");
